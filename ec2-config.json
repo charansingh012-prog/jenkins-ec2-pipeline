@@ -1,1 +1,24 @@
-{\n  "instances": [\n    {\n      "instanceName": "jenkins-master",\n      "imageId": "ami-0c55b159cbfafe1f0",\n      "instanceType": "t3.medium",\n      "keyName": "jenkins-key",\n      "securityGroups": ["jenkins-sg"],\n      "subnetId": "subnet-12345678",\n      "tagSpecifications": {\n        "resourceType": "instance",\n        "tags": [\n          {\n            "key": "Name",\n            "value": "jenkins-master"\n          },\n          {\n            "key": "Environment",\n            "value": "production"\n          }\n        ]\n      },\n      "monitoring": true,\n      "rootVolumeSize": 30,\n      "rootVolumeType": "gp3"\n    },\n    {\n      "instanceName": "jenkins-agent",\n      "imageId": "ami-0c55b159cbfafe1f0",\n      "instanceType": "t3.small",\n      "keyName": "jenkins-key",\n      "securityGroups": ["jenkins-agent-sg"],\n      "subnetId": "subnet-87654321",\n      "tagSpecifications": {\n        "resourceType": "instance",\n        "tags": [\n          {\n            "key": "Name",\n            "value": "jenkins-agent"\n          },\n          {\n            "key": "Environment",\n            "value": "production"\n          }\n        ]\n      },\n      "monitoring": false,\n      "rootVolumeSize": 20,\n      "rootVolumeType": "gp3"\n    }\n  ],\n  "vpc": {\n    "vpcId": "vpc-12345678",\n    "enableDnsHostnames": true,\n    "enableDnsSupport": true\n  },\n  "securityGroups": [\n    {\n      "groupName": "jenkins-sg",\n      "description": "Security group for Jenkins master",\n      "inboundRules": [\n        {\n          "protocol": "tcp",\n          "fromPort": 22,\n          "toPort": 22,\n          "cidrIp": "0.0.0.0/0",\n          "description": "SSH access"\n        },\n        {\n          "protocol": "tcp",\n          "fromPort": 8080,\n          "toPort": 8080,\n          "cidrIp": "0.0.0.0/0",\n          "description": "Jenkins UI"\n        },\n        {\n          "protocol": "tcp",\n          "fromPort": 50000,\n          "toPort": 50000,\n          "cidrIp": "0.0.0.0/0",\n          "description": "Jenkins agents"\n        }\n      ]\n    },\n    {\n      "groupName": "jenkins-agent-sg",\n      "description": "Security group for Jenkins agents",\n      "inboundRules": [\n        {\n          "protocol": "tcp",\n          "fromPort": 22,\n          "toPort": 22,\n          "cidrIp": "0.0.0.0/0",\n          "description": "SSH access"\n        }\n      ]\n    }\n  ]\n}
+{
+  
+  "Description": "Create a simple EC2 instance",
+
+  "Resources": {
+    "MyEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-05d2d839d4f73aafb",
+        "InstanceType": "t2.micro",
+        "KeyName": "CICDEC2",
+        "SecurityGroups": [
+          "default"
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Jenkins-EC2"
+          }
+        ]
+      }
+    }
+  }
+}
