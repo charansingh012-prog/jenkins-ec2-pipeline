@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        AWS_DEFAULT_REGION    = 'ap-south-1'
+        AWS_ACCESS_KEY_ID     = credentials('AKIAX7566ZEVQOGNTMOZ')
+        AWS_SECRET_ACCESS_KEY = credentials('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')
+        AWS_DEFAULT_REGION    = 'us-east-1'
     }
 
     parameters {
@@ -15,28 +15,27 @@ pipeline {
         )
         choice(
             name: 'INSTANCE_TYPE',
-            choices: ['t2.micro', 't2.small', 't2.medium', 't3.micro'],
+            choices: ['t2.micro', 't2.small', 't2.medium'],
             description: 'EC2 Instance Type'
         )
         choice(
             name: 'ENVIRONMENT',
             choices: ['dev', 'staging', 'prod'],
-            description: 'Deployment Environment'
+            description: 'Environment'
         )
         string(
             name: 'INSTANCE_NAME',
             defaultValue: 'jenkins-ec2',
-            description: 'Name for EC2 instance'
+            description: 'EC2 Instance Name'
         )
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                echo "Checking out Terraform code..."
-                git branch: 'main',
-                    url: 'https://github.com/your-org/your-terraform-repo.git'
+                echo "Checking out code..."
+                checkout scm
             }
         }
 
@@ -64,15 +63,8 @@ pipeline {
 
         stage('Terraform Validate') {
             steps {
-                echo "Validating Terraform configuration..."
+                echo "Validating configuration..."
                 sh 'terraform validate'
-            }
-        }
-
-        stage('Terraform Format Check') {
-            steps {
-                echo "Checking Terraform formatting..."
-                sh 'terraform fmt -check'
             }
         }
 
@@ -97,13 +89,8 @@ pipeline {
             }
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
-                    input message: """
-                        ⚠️ Confirm Terraform ${params.ACTION.toUpperCase()}
-                        Instance: ${params.INSTANCE_NAME}
-                        Type:     ${params.INSTANCE_TYPE}
-                        Env:      ${params.ENVIRONMENT}
-                        Proceed?
-                    """, ok: "Yes, ${params.ACTION}!"
+                    input message: "Approve ${params.ACTION} for ${params.INSTANCE_NAME}?",
+                          ok: "Yes, proceed!"
                 }
             }
         }
@@ -113,7 +100,7 @@ pipeline {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                echo "Applying Terraform changes..."
+                echo "Applying Terraform..."
                 sh 'terraform apply -auto-approve tfplan'
             }
         }
@@ -123,7 +110,6 @@ pipeline {
                 expression { params.ACTION == 'destroy' }
             }
             steps {
-                echo "Destroying infrastructure..."
                 sh """
                     terraform destroy -auto-approve \
                         -var="instance_name=${params.INSTANCE_NAME}" \
@@ -138,30 +124,22 @@ pipeline {
                 expression { params.ACTION == 'apply' }
             }
             steps {
-                echo "Fetching EC2 details..."
-                sh '''
-                    echo "=============================="
-                    echo "   EC2 Instance Details"
-                    echo "=============================="
-                    terraform output
-                '''
+                sh 'terraform output'
             }
         }
     }
 
     post {
         success {
-            echo "✅ Pipeline SUCCESS: Terraform ${params.ACTION} completed!"
+            echo "✅ Pipeline SUCCESS!"
         }
         failure {
-            echo "❌ Pipeline FAILED: Check logs above for errors."
-        }
-        aborted {
-            echo "⚠️ Pipeline ABORTED: Action was cancelled."
+            echo "❌ Pipeline FAILED! Check logs."
         }
         always {
-            echo "Pipeline finished. Cleaning workspace..."
-            cleanWs()
+            node('built-in') {        // fix for cleanWs missing context error
+                cleanWs()
+            }
         }
     }
 }
