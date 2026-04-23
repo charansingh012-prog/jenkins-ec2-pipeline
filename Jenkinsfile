@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('AKIAX7566ZEVQOGNTMOZ')
-        AWS_SECRET_ACCESS_KEY = credentials('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')
+        AWS_ACCESS_KEY_ID     = credentials('AKIAX7566ZEVWPUZOQFF')
+        AWS_SECRET_ACCESS_KEY = credentials('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')
         AWS_DEFAULT_REGION    = 'us-east-1'
     }
 
